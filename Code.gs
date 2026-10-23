@@ -130,7 +130,7 @@ function importarCorreosCopello() {
       }
       if (CONFIG.crearBorradorRespuesta && attachments.length > 0) {
         try {
-          msg.createDraftReply(CONFIG.textoBorrador);
+          thread.createDraftReply(CONFIG.textoBorrador);
           drafts++;
         } catch (e) {}
       }
