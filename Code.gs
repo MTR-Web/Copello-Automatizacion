@@ -195,61 +195,61 @@ function actualizarPlanillaImpresionCopello_() {
   if (!out) out = ss.insertSheet(name);
   out.clear();
   out.setHiddenGridlines(true);
-  out.getRange('A1:G1').merge().setValue('CONSORCIO: ______________________________________________');
-  out.getRange('A2:G2').merge().setValue('ADMINISTRACIÓN: __________________________________________   TEL.: __________________');
-  out.getRange('A3:G3').merge().setValue('PLANILLA DESCRIPTIVA DE LA COBRANZA');
-  const headers = ['AF','N.º DEPTO.','APELLIDO Y NOMBRE','IMPORTE','FECHA / PERÍODO','FIRMA / OBSERVACIONES','CONTROL'];
-  out.getRange(4,1,1,7).setValues([headers]);
-  const values = source && source.getLastRow() > 1
-    ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues()
-    : [];
+  out.getRange('A1:J1').merge().setValue('COPELLO ADMINISTRACIÓN: LUNES A VIERNES DE 9 A 18 HS. · CABA');
+  out.getRange('A2:J2').merge().setValue('EMAIL: PAGOS Y EXPENSAS');
+  out.getRange('A3:J3').merge().setValue('PLANILLA DESCRIPTIVA DE LA COBRANZA  *  LIQUIDACIÓN EXPENSAS  *');
+  const headers = ['AF','A4','Apellido y nombre del propietario','Saldo deudor','Fecha de pago','Pago por correo','N.º de cheque','Nombre del banco','Importe del cheque','Observaciones / comprobante'];
+  out.getRange(4,1,1,headers.length).setValues([headers]);
+  const values = source && source.getLastRow() > 1 ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues() : [];
   const rows = values.map(r => {
     const sender = String(r[1] || '');
     const senderName = sender.replace(/<[^>]*>/g,'').replace(/["']/g,'').trim();
-    const payer = String(r[6] || '').trim();
+    const extracted = String(r[9] || '').trim();
+    const parsed = extraerCampos_(extracted);
+    const payer = String(r[6] || parsed.pagador || '').trim();
+    const date = r[4] || parsed.fecha || '';
     const subject = String(r[2] || '').trim();
-    const operation = String(r[5] || '').trim();
+    const operation = String(r[5] || parsed.operacion || '').trim();
     const attachment = String(r[7] || '').trim();
     const status = String(r[10] || 'Pendiente de revisión').trim();
-    const date = r[4] || '';
-    const extracted = String(r[9] || '').trim();
-    const notes = [
+    const details = [
       subject ? 'Asunto: ' + subject : '',
-      operation ? 'Operación: ' + operation : '',
       attachment ? 'Adjunto: ' + attachment : '',
-      extracted ? 'Datos leídos: ' + extracted.slice(0,1200) : 'Texto del comprobante: no disponible'
+      operation ? 'Operación: ' + operation : '',
+      extracted ? extracted.slice(0,900) : 'OCR sin texto: revisar imagen del comprobante'
     ].filter(Boolean).join('\n');
-    return ['', '', payer || senderName, r[3] || '', date, notes, (sender ? 'Correo: ' + sender : '') + (status ? '\nEstado: ' + status : '')];
+    return ['', '', payer || '', r[3] || parsed.importe || '', date, sender ? sender : '', operation, '', '', details + (status ? '\nEstado: ' + status : '')];
   });
-  if (rows.length) out.getRange(5,1,rows.length,7).setValues(rows);
+  if (rows.length) out.getRange(5,1,rows.length,10).setValues(rows);
   const totalRows = Math.max(24, rows.length + 5);
-  if (totalRows > out.getMaxRows()) out.insertRowsAfter(out.getMaxRows(), totalRows - out.getMaxRows());
-  out.getRange(1,1,3,7).setFontFamily('Arial').setVerticalAlignment('middle');
-  out.getRange('A1').setFontSize(12).setFontWeight('bold');
-  out.getRange('A2').setFontSize(10);
-  out.getRange('A3').setFontSize(13).setFontWeight('bold').setHorizontalAlignment('center');
-  out.setRowHeight(1,26); out.setRowHeight(2,23); out.setRowHeight(3,28);
-  out.getRange(4,1,1,7).setFontWeight('bold').setFontSize(9).setBackground('#e7e7e7').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
-  out.setRowHeight(4,34);
+  if (totalRows > out.getMaxRows()) out.insertRowsAfter(out.getMaxRows(), totalRows-out.getMaxRows());
+  out.getRange(1,1,3,10).setFontFamily('Arial').setVerticalAlignment('middle');
+  out.getRange('A1').setFontSize(10).setFontWeight('bold');
+  out.getRange('A2').setFontSize(9);
+  out.getRange('A3').setFontSize(12).setFontWeight('bold').setHorizontalAlignment('center');
+  out.setRowHeight(1,24); out.setRowHeight(2,20); out.setRowHeight(3,27);
+  out.getRange(4,1,1,10).setFontWeight('bold').setFontSize(8).setBackground('#e7e7e7').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
+  out.setRowHeight(4,48);
   if (rows.length) {
-    out.getRange(5,1,rows.length,7).setFontSize(9).setVerticalAlignment('middle').setWrap(true);
-    out.setRowHeights(5, rows.length, 42);
+    out.getRange(5,1,rows.length,10).setFontSize(8).setVerticalAlignment('middle').setWrap(true);
+    out.setRowHeights(5,rows.length,52);
   }
-  [55,78,185,95,110,175,175].forEach((w,i)=>out.setColumnWidth(i+1,w));
-  out.getRange(4,1,totalRows-3,7).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
-  out.getRange('A1:G3').setBorder(false,false,false,false,false,false);
-  out.getRange('A4:G4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  out.getRange(totalRows,1,1,7).merge().setValue('OBSERVACIONES: ______________________________________________________________________________________________');
-  out.setRowHeight(totalRows,26);
-  out.getRange(totalRows,1).setFontSize(9).setVerticalAlignment('middle');
+  [42,48,150,80,75,145,75,90,85,210].forEach((w,i)=>out.setColumnWidth(i+1,w));
+  out.getRange(4,1,totalRows-3,10).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
+  out.getRange('A1:J3').setBorder(false,false,false,false,false,false);
+  out.getRange('A4:J4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  out.getRange(totalRows,1,1,10).merge().setValue('OBSERVACIONES: __________________________________________________________________________________________________________');
+  out.setRowHeight(totalRows,25);
+  out.getRange(totalRows,1).setFontSize(8).setVerticalAlignment('middle');
   out.setFrozenRows(4);
   out.setTabColor('#2e6b53');
-  if (out.getMaxColumns() > 7) out.deleteColumns(8,out.getMaxColumns()-7);
+  if (out.getMaxColumns()>10) out.deleteColumns(11,out.getMaxColumns()-10);
   if (rows.length) {
     out.getRange(5,4,rows.length,1).setNumberFormat('$ #,##0.00');
     out.getRange(5,5,rows.length,1).setNumberFormat('dd/mm/yyyy');
+    out.getRange(5,9,rows.length,1).setNumberFormat('$ #,##0.00');
   }
-  return {rows:rows.length, sheet:name, sheetId:out.getSheetId()};
+  return {rows:rows.length,sheet:name,sheetId:out.getSheetId()};
 }
 
 function obtenerEstadoCopello() {
