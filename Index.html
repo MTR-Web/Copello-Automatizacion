@@ -97,7 +97,7 @@
     </div>
     <div>
       <div class="nav-label">ESPACIO DE TRABAJO</div>
-      <div class="nav-item active">
+      <div class="nav-item active" role="button" tabindex="0" onclick="irA(&quot;resumen&quot;, this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span>Resumen</span>
       </div>
@@ -117,7 +117,7 @@
   </aside>
 
   <main>
-    <header class="topbar">
+    <header class="topbar" id="resumen">
       <div>
         <div class="eyebrow">Panel de control</div>
         <h1>Centro de correos</h1>
@@ -223,6 +223,14 @@
       button.disabled = false;
       if (button.dataset.originalText) button.textContent = button.dataset.originalText;
     }
+  }
+
+  function irA(destino, elemento) {
+    if (destino === "planilla" && estado && estado.spreadsheetUrl) abrirPlanilla();
+    const objetivo = document.getElementById(destino);
+    if (objetivo) objetivo.scrollIntoView({behavior:"smooth", block:"start"});
+    document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+    if (elemento) elemento.classList.add("active");
   }
 
   function cargarEstado() {
