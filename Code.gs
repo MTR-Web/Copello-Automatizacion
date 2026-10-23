@@ -148,6 +148,7 @@ function importarCorreosCopello() {
     sh.getRange(start,14,rows.length,1).setNumberFormat('dd/mm/yyyy hh:mm');
   }
   if (mailRows.length) mailSh.getRange(mailSh.getLastRow()+1,1,mailRows.length,8).setValues(mailRows);
+  actualizarPlanillaImpresionCopello_();
   props.setProperty('COPPELLO_LAST_RUN',new Date().toISOString());
   props.setProperty('COPPELLO_LAST_IMPORT',JSON.stringify({imported,attachmentCount,drafts,ocrUnavailable}));
   return {imported,attachmentCount,drafts,ocrUnavailable,total:Math.max(0,sh.getLastRow()-1),spreadsheetUrl:ss.getUrl()};
@@ -179,6 +180,58 @@ function extraerCampos_(text) {
   const opMatch = t.match(/(?:operaci[oó]n|comprobante|transacci[oó]n|referencia|n[uú]mero de operaci[oó]n|id)\s*(?:n[ro.º°]*\s*)?[:#-]?\s*([A-Z0-9-]{5,})/i);
   const payerMatch = t.match(/(?:titular|ordenante|pagador|de\s+parte\s+de|enviado\s+por)\s*[:\-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑa-záéíóúñ .'-]{2,60})/i);
   return {importe:importeMatch ? importeMatch[0].trim() : '',fecha:fechaMatch ? fechaMatch[1] : '',operacion:opMatch ? opMatch[1] : '',pagador:payerMatch ? payerMatch[1].trim() : ''};
+}
+
+
+/** Crea una hoja de cobranza apaisada, lista para imprimir y completar a mano. */
+function actualizarPlanillaImpresionCopello_() {
+  const props = PropertiesService.getUserProperties();
+  const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  if (!id) return {rows:0};
+  const ss = SpreadsheetApp.openById(id);
+  const source = ss.getSheetByName(CONFIG.nombreHoja);
+  const name = 'Planilla para imprimir';
+  let out = ss.getSheetByName(name);
+  if (!out) out = ss.insertSheet(name);
+  out.clear();
+  out.setHiddenGridlines(true);
+  out.getRange('A1:G1').merge().setValue('CONSORCIO: ______________________________________________');
+  out.getRange('A2:G2').merge().setValue('ADMINISTRACIÓN: __________________________________________   TEL.: __________________');
+  out.getRange('A3:G3').merge().setValue('PLANILLA DESCRIPTIVA DE LA COBRANZA');
+  const headers = ['AF','N.º DEPTO.','APELLIDO Y NOMBRE','IMPORTE','FECHA / PERÍODO','FIRMA / OBSERVACIONES','CONTROL'];
+  out.getRange(4,1,1,7).setValues([headers]);
+  const rows = source && source.getLastRow() > 1
+    ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues().map(r => ['', '', r[6] || '', r[3] || '', r[4] || '', '', ''])
+    : [];
+  if (rows.length) out.getRange(5,1,rows.length,7).setValues(rows);
+  const totalRows = Math.max(24, rows.length + 5);
+  if (totalRows > out.getMaxRows()) out.insertRowsAfter(out.getMaxRows(), totalRows - out.getMaxRows());
+  out.getRange(1,1,3,7).setFontFamily('Arial').setVerticalAlignment('middle');
+  out.getRange('A1').setFontSize(12).setFontWeight('bold');
+  out.getRange('A2').setFontSize(10);
+  out.getRange('A3').setFontSize(13).setFontWeight('bold').setHorizontalAlignment('center');
+  out.setRowHeight(1,26); out.setRowHeight(2,23); out.setRowHeight(3,28);
+  out.getRange(4,1,1,7).setFontWeight('bold').setFontSize(9).setBackground('#e7e7e7').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
+  out.setRowHeight(4,34);
+  if (rows.length) out.getRange(5,1,rows.length,7).setFontSize(9).setVerticalAlignment('middle').setWrap(true);
+  out.setRowHeights(5, Math.max(1,totalRows-4), 25);
+  [55,78,185,95,110,175,80].forEach((w,i)=>out.setColumnWidth(i+1,w));
+  out.getRange(4,1,totalRows-3,7).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
+  out.getRange('A1:G3').setBorder(false,false,false,false,false,false);
+  out.getRange('A4:G4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  out.getRange(totalRows,1,1,7).merge().setValue('OBSERVACIONES: ______________________________________________________________________________________________');
+  out.setRowHeight(totalRows,26);
+  out.getRange(totalRows,1).setFontSize(9).setVerticalAlignment('middle');
+  out.setFrozenRows(4);
+  out.setTabColor('#2e6b53');
+  if (out.getMaxColumns() > 7) out.deleteColumns(8,out.getMaxColumns()-7);
+  if (rows.length) {
+    out.getRange(5,4,rows.length,1).setNumberFormat('$ #,##0.00');
+    out.getRange(5,5,rows.length,1).setNumberFormat('dd/mm/yyyy');
+  }
+  const sheet = out.getSheetId();
+  ss.setActiveSheet(out);
+  return {rows:rows.length, sheet:name, sheetId:sheet};
 }
 
 function obtenerEstadoCopello() {
