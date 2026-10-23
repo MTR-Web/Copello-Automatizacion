@@ -15,13 +15,13 @@ Automatización inicial para registrar correos de Gmail en una planilla de Googl
 3. En el editor de Apps Script, abrí **Servicios +**, agregá **Drive API** (v2), necesaria para intentar OCR de PDF e imágenes.
 4. Guardá. Ejecutá `prepararCopello` desde el editor y autorizá Gmail, Drive y Sheets.
 5. En Gmail, etiquetá un correo de prueba con `Pagos`. No uses esa etiqueta para quejas.
-6. Implementá como aplicación web, ejecutá como tu cuenta y limitá el acceso a las cuentas autorizadas.
+6. Implementá como aplicación web con **Ejecutar como: usuario que accede a la aplicación web** y **Quién tiene acceso: cualquier usuario con una cuenta de Google**. Así cada persona entra con Google y autoriza su propio Gmail. No uses acceso anónimo.
 7. Abrí la URL `/exec`, tocá **Preparar sistema** y luego **Importar correos**. Revisá tanto la planilla como la carpeta `Copello_Comprobantes`.
 8. Activá la revisión automática solo después de comprobar una prueba manual.
 
 ## Qué registra y qué no
 
-- La hoja `Comprobantes` guarda un registro por adjunto, el enlace al archivo de Drive, texto extraído, campos detectados y estado de revisión.
+- Cada cuenta de Google tendrá su propia planilla y carpeta de adjuntos; no se comparte automáticamente la información entre cuentas. La hoja `Comprobantes` guarda un registro por adjunto, el enlace al archivo de Drive, texto extraído, campos detectados y estado de revisión.
 - La hoja `Correos` conserva el registro del mensaje.
 - Copello intenta detectar importe, fecha, número de operación y pagador mediante patrones de texto. La extracción puede fallar o interpretar mal formatos; los datos deben verificarse.
 - Los adjuntos se guardan en una carpeta de Drive llamada `Copello_Comprobantes`.
@@ -57,3 +57,8 @@ La página pública tiene un campo para guardar la URL de la aplicación web de 
 8. Abrí la página de GitHub Pages, pegá esa URL en **Acceso operativo** y guardala. Desde ahí se abrirá el panel.
 
 La página de GitHub Pages no puede acceder directamente a Gmail. El panel operativo debe ejecutarse desde la URL de Apps Script, que solicita los permisos de Google. No compartas la URL de una implementación con permisos amplios.
+
+
+## Acceso de dos usuarios
+
+Copello no necesita contraseñas propias. La autenticación la hace Google: cada usuario abre la URL `/exec`, inicia sesión con su cuenta de Google y concede los permisos que solicita Apps Script. En la implementación, elegí **Ejecutar como: usuario que accede** y **Quién tiene acceso: cualquier usuario con una cuenta de Google**. Cada cuenta tendrá su propia planilla, carpeta y registros. No uses acceso anónimo ni compartas contraseñas.
