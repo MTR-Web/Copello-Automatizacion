@@ -62,3 +62,8 @@ La página de GitHub Pages no puede acceder directamente a Gmail. El panel opera
 ## Acceso de dos usuarios
 
 Copello no necesita contraseñas propias. La autenticación la hace Google: cada usuario abre la URL `/exec`, inicia sesión con su cuenta de Google y concede los permisos que solicita Apps Script. En la implementación, elegí **Ejecutar como: usuario que accede** y **Quién tiene acceso: cualquier usuario con una cuenta de Google**. Cada cuenta tendrá su propia planilla, carpeta y registros. No uses acceso anónimo ni compartas contraseñas.
+
+
+## OneDrive y almacenamiento
+
+La versión actual usa Google Sheets como planilla operativa y Google Drive para guardar los comprobantes adjuntos. No se conecta ni sincroniza automáticamente con OneDrive. Para usar Excel con OneDrive, descargá la planilla como `.xlsx` y subila a OneDrive; una sincronización automática requiere una integración adicional con Microsoft Graph y permisos de Microsoft.
