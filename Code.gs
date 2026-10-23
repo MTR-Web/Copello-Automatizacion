@@ -93,6 +93,10 @@ function importarCorreosCopello() {
   Array.from(threadsById.values()).forEach(thread => {
     thread.getMessages().forEach(msg => {
       const msgId = msg.getId();
+      const accountEmail = String(Session.getActiveUser().getEmail() || '').toLowerCase();
+      const fromEmail = String(msg.getFrom() || '').toLowerCase();
+      // No importar respuestas propias: las conversaciones etiquetadas pueden incluirlas.
+      if (accountEmail && fromEmail.includes(accountEmail)) return;
       if (existing.has(msgId)) return;
       const attachments = msg.getAttachments({includeInlineImages:false,includeAttachments:true});
       const mailLink = 'https://mail.google.com/mail/u/0/#all/' + msgId;
@@ -272,6 +276,27 @@ function obtenerEstadoCopello() {
   }
   return state;
 }
+
+/** Reinicia el historial de correos importados, sin borrar los correos de Outlook/Gmail ni los adjuntos de Drive. */
+function limpiarHistorialCopello() {
+  const props = PropertiesService.getUserProperties();
+  const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  if (!id) throw new Error('Primero prepará el sistema.');
+  const ss = SpreadsheetApp.openById(id);
+  [CONFIG.nombreHoja, CONFIG.nombreHojaCorreos].forEach(name => {
+    const sh = ss.getSheetByName(name);
+    if (sh && sh.getLastRow() > 1) sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).clearContent();
+  });
+  const printSh = ss.getSheetByName('Planilla para imprimir');
+  if (printSh) {
+    // La próxima importación reconstruye las filas de la planilla imprimible.
+    printSh.clear();
+  }
+  props.deleteProperty('COPPELLO_LAST_RUN');
+  props.deleteProperty('COPPELLO_LAST_IMPORT');
+  return obtenerEstadoCopello();
+}
+
 function prepararDesdePanelCopello() { prepararCopello(); return obtenerEstadoCopello(); }
 function importarDesdePanelCopello() { const result=importarCorreosCopello(); return {result,state:obtenerEstadoCopello()}; }
 function instalarRevisionAutomaticaCopello() {
