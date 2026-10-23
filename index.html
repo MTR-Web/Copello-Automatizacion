@@ -17,7 +17,17 @@ section.block{padding:76px 0}.section-intro{text-align:center;max-width:620px;ma
 .notice{display:flex;gap:12px;background:#fff9ed;border:1px solid #f0e2c7;border-radius:13px;padding:15px 17px;color:#775f39;font-size:11px;line-height:1.65;margin-top:25px}.notice svg{flex:none;width:17px;height:17px;margin-top:1px}
 .final-cta{background:var(--forest);color:white;padding:55px 0}.cta-row{display:flex;align-items:center;justify-content:space-between;gap:25px}.cta-row h2{font-size:clamp(25px,4vw,36px);letter-spacing:-1.2px;margin:0 0 9px}.cta-row p{font-size:12px;line-height:1.7;color:#c1d6c9;margin:0;max-width:590px}.cta-row .btn{background:#e3f3e6;color:#204b37;white-space:nowrap}
 footer{padding:24px 0;background:#102e25;color:#9cb8a8;font-size:10px}.footrow{display:flex;justify-content:space-between;gap:20px}
-@media(max-width:850px){.hero{padding:55px 0}.hero-grid{grid-template-columns:1fr;gap:40px}.preview{max-width:600px;width:100%;margin:auto}.features{grid-template-columns:1fr}.steps{grid-template-columns:1fr;gap:19px}.cta-row{align-items:flex-start;flex-direction:column}.hero h1{letter-spacing:-2px}.navlinks{gap:14px}}
+.panel-connect{background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,34px);display:grid;grid-template-columns:1fr minmax(270px,.85fr);gap:30px;align-items:center;box-shadow:0 14px 35px #1c4a3308}
+.panel-connect h2{font-size:clamp(24px,3.5vw,34px);letter-spacing:-1.1px;margin:11px 0}
+.panel-connect p{font-size:12px;line-height:1.75;color:var(--muted);margin:0}
+.panel-form{background:#f5f8f4;border:1px solid #e5ece5;border-radius:14px;padding:17px}
+.panel-form label{display:block;font-size:11px;font-weight:750;margin-bottom:8px}
+.panel-form input{display:block;width:100%;border:1px solid #d7e2d8;border-radius:9px;padding:12px;background:white;color:var(--ink);font:inherit;font-size:11px;outline:none}
+.panel-form input:focus{border-color:#5a9169;box-shadow:0 0 0 3px #dff1e4}
+.panel-form .btn{width:100%;margin-top:9px}
+.panel-form small{display:block;color:#7b887e;font-size:10px;line-height:1.55;margin-top:9px}
+.panel-status{font-size:10px;line-height:1.5;color:#447451;margin-top:8px;min-height:15px}
+@media(max-width:850px){.panel-connect{grid-template-columns:1fr;gap:20px}.hero{padding:55px 0}.hero-grid{grid-template-columns:1fr;gap:40px}.preview{max-width:600px;width:100%;margin:auto}.features{grid-template-columns:1fr}.steps{grid-template-columns:1fr;gap:19px}.cta-row{align-items:flex-start;flex-direction:column}.hero h1{letter-spacing:-2px}.navlinks{gap:14px}}
 @media(max-width:520px){.wrap{width:min(100% - 30px,1120px)}header{height:70px}.navlinks a:not(.navcta){display:none}.hero{padding:45px 0}.hero h1{font-size:42px}.hero p{font-size:13px}.preview-body{padding:14px}.stat{padding:10px 8px}.stat strong{font-size:19px}.preview h3{font-size:20px}.block{padding:55px 0!important}.footrow{flex-direction:column}.actions .btn{flex:1}}
 </style>
 </head>
@@ -28,8 +38,35 @@ footer{padding:24px 0;background:#102e25;color:#9cb8a8;font-size:10px}.footrow{d
 <div class="preview"><div class="preview-top"><div class="dots"><i></i><i></i><i></i></div><div class="preview-title">Copello / Centro de correos</div><div class="live">VISTA PREVIA</div></div><div class="preview-body"><div class="preview-greet">Panel de control</div><h3>Resumen de actividad</h3><div class="stats"><div class="stat"><small>Correos registrados</small><strong>024</strong></div><div class="stat"><small>Gmail</small><strong class="green">Listo</strong></div><div class="stat"><small>Automático</small><strong>15<span style="font-size:10px;color:#7d8981"> min</span></strong></div></div><div class="tablehead"><strong>Actividad reciente</strong><span>Ejemplo visual</span></div><div class="mail"><div class="mailicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><div class="mailtext"><strong>Asunto del correo recibido</strong><small>remitente@ejemplo.com · hoy</small></div><span class="badge">Registrado</span></div><div class="mail"><div class="mailicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><div class="mailtext"><strong>Otro mensaje de ejemplo</strong><small>administracion@ejemplo.com</small></div><span class="badge">Registrado</span></div></div></div></div></section>
 <section class="block" id="alcance"><div class="wrap"><div class="section-intro"><div class="kicker">Diseñado para una tarea concreta</div><h2>Un flujo simple y controlable</h2><p>El sistema se limita a los mensajes que reciben una etiqueta determinada. No accede indiscriminadamente a toda la bandeja ni envía respuestas en nombre de la administración.</p></div><div class="features"><article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><h3>Entrada seleccionada</h3><p>Se procesan únicamente los correos que tengan la etiqueta <strong>Copello_Para_Excel</strong> en Gmail.</p></article><article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Registro centralizado</h3><p>Fecha, remitente, asunto, cuerpo, enlace al correo y un identificador para reconocer duplicados.</p></article><article class="feature"><div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Automatización opcional</h3><p>Después de probar el proceso manual, se puede activar una revisión automática cada 15 minutos.</p></article></div><div class="notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><strong>Alcance actual:</strong> esta versión registra el correo completo, pero todavía no separa automáticamente los datos específicos en columnas de negocio. Esa parte requiere definir los campos de destino y el formato de los mensajes reales. La vista de arriba es ilustrativa, no datos de una cuenta conectada.</div></div></div></section>
 <section class="block steps-section" id="como-funciona"><div class="wrap"><div class="section-intro"><div class="kicker">Puesta en marcha</div><h2>De cero a una primera prueba</h2><p>El backend funciona en Google Apps Script porque necesita permisos de Gmail y Google Sheets. Esta página de GitHub es informativa; el panel operativo se abre desde la implementación de Apps Script.</p></div><div class="steps"><article class="step"><div class="step-no">PASO 01</div><h3>Crear el proyecto</h3><p>Copiá <code>Code.gs</code> y <code>Index.html</code> desde el repositorio a un proyecto de Google Apps Script.</p></article><article class="step"><div class="step-no">PASO 02</div><h3>Autorizar y preparar</h3><p>Ejecutá la preparación inicial y autorizá los permisos solicitados. Se crea la hoja de cálculo y la etiqueta de Gmail.</p></article><article class="step"><div class="step-no">PASO 03</div><h3>Probar con un correo</h3><p>Aplicá la etiqueta a un correo de prueba, importalo desde el panel y verificá que la fila se haya registrado correctamente.</p></article></div></div></section>
+<section class="block" id="panel-operativo"><div class="wrap"><div class="panel-connect"><div><div class="kicker">Acceso operativo</div><h2>Conectá tu panel de Google Apps Script</h2><p>Cuando despliegues el proyecto como aplicación web en Apps Script, pegá acá la URL terminada en <code>/exec</code>. Se guardará en este navegador para que puedas abrir el panel desde esta página. La URL de despliegue todavía no existe hasta que se publique desde tu cuenta de Google.</p></div><form class="panel-form" id="panelForm"><label for="panelUrl">URL de la aplicación web</label><input id="panelUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="url" required><button class="btn primary" type="submit">Guardar y abrir panel ↗</button><div class="panel-status" id="panelStatus" aria-live="polite"></div><small>Usá una URL oficial de script.google.com. Restringí el acceso a las cuentas autorizadas; no publiques el panel con acceso abierto.</small></form></div></div></section>
 <section class="final-cta"><div class="wrap cta-row"><div><h2>Todo el código, en un solo lugar.</h2><p>Consultá los archivos, seguí la guía de instalación y revisá las limitaciones conocidas antes de usarlo con correos reales.</p></div><a class="btn" href="https://github.com/MTR-Web/Copello-Automatizacion">Abrir repositorio en GitHub ↗</a></div></section>
 </main>
 <footer><div class="wrap footrow"><span>Copello · Automatización interna de correo</span><span>Herramienta inicial · Verificar los resultados antes de usar datos operativos</span></div></footer>
+<script>
+(function(){
+  const input = document.getElementById('panelUrl');
+  const form = document.getElementById('panelForm');
+  const status = document.getElementById('panelStatus');
+  try {
+    const saved = localStorage.getItem('copelloAppsScriptWebAppUrl');
+    if (saved) { input.value = saved; status.textContent = 'Hay una URL guardada en este navegador.'; }
+  } catch(e) {}
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    let url;
+    try { url = new URL(input.value.trim()); } catch(e) {
+      status.textContent = 'Pegá una URL válida de la aplicación web.';
+      return;
+    }
+    if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' || !url.pathname.includes('/macros/s/') || !url.pathname.endsWith('/exec')) {
+      status.textContent = 'La URL debe ser de script.google.com/macros/s/.../exec.';
+      return;
+    }
+    try { localStorage.setItem('copelloAppsScriptWebAppUrl', url.href); } catch(e) {}
+    status.textContent = 'URL guardada. Abriendo el panel…';
+    window.open(url.href, '_blank', 'noopener');
+  });
+})();
+</script>
 </body>
 </html>
