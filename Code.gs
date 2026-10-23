@@ -179,6 +179,7 @@ function importarCorreosCopello() {
   const printable = ss.getSheetByName('Planilla para imprimir');
   [sh, mailSh].forEach(tab => { if (tab) tab.hideSheet(); });
   if (printable) { printable.showSheet(); ss.setActiveSheet(printable); }
+  ss.getSheets().filter(tab => tab.getName() === 'Sheet1' && ss.getSheets().length > 1).forEach(tab => ss.deleteSheet(tab));
   props.setProperty('COPPELLO_LAST_RUN',new Date().toISOString());
   props.setProperty('COPPELLO_LAST_IMPORT',JSON.stringify({imported,attachmentCount,drafts,ocrUnavailable}));
   return {imported,attachmentCount,drafts,ocrUnavailable,total:Math.max(0,sh.getLastRow()-1),spreadsheetUrl:ss.getUrl()};
