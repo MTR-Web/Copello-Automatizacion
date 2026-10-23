@@ -58,12 +58,12 @@ function obtenerEstadoCopello() {
   const props = PropertiesService.getScriptProperties();
   const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
   const triggers = ScriptApp.getProjectTriggers();
-  const state = {ready:false,labelExists:Boolean(GmailApp.getUserLabelByName(CONFIG.etiquetaGmail)),label:CONFIG.etiquetaGmail,spreadsheetUrl:'',total:0,recent:[],triggerEnabled:triggers.some(t=>t.getHandlerFunction()==='importarCorreosCopello'),lastRun:props.getProperty('COPPELLO_LAST_RUN')||''};
+  const state = {ready:false,labelExists:Boolean(GmailApp.getUserLabelByName(CONFIG.etiquetaGmail)),label:CONFIG.etiquetaGmail,spreadsheetUrl:'',excelUrl:'',total:0,recent:[],triggerEnabled:triggers.some(t=>t.getHandlerFunction()==='importarCorreosCopello'),lastRun:props.getProperty('COPPELLO_LAST_RUN')||''};
   if (id) {
     try {
       const ss = SpreadsheetApp.openById(id);
       const sh = ss.getSheetByName(CONFIG.nombreHoja);
-      state.ready = true; state.spreadsheetUrl = ss.getUrl();
+      state.ready = true; state.spreadsheetUrl = ss.getUrl(); state.excelUrl = 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx';
       if (sh && sh.getLastRow()>1) {
         const last=sh.getLastRow(); state.total=last-1;
         const from=Math.max(2,last-4);
