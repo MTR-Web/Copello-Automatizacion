@@ -121,7 +121,7 @@
       <div>
         <div class="eyebrow">Panel de control</div>
         <h1>Centro de correos</h1>
-        <p class="subtitle">Recepción y registro de correos en una sola vista.</p>
+        <p class="subtitle">Comprobantes de pago desde Gmail a Excel, con revisión de los datos detectados.</p>
       </div>
       <div class="user-chip"><div class="avatar">C</div><div><strong style="font-size:12px">Copello</strong><small>Automatización interna</small></div></div>
     </header>
@@ -129,8 +129,8 @@
     <section class="hero">
       <div class="hero-content">
         <div class="hero-tag"><span class="dot"></span><span id="heroStatus">Panel listo para configurar</span></div>
-        <h2>Del correo a la planilla.<br>Sin copiar y pegar.</h2>
-        <p>Centralizá los mensajes importantes y registralos en una hoja de cálculo. El sistema evita duplicados y mantiene un enlace al correo original.</p>
+        <h2>Del comprobante al Excel.<br>Sin carga manual.</h2>
+        <p>Etiquetá los correos de pagos en Gmail. Copello guarda los adjuntos, intenta extraer datos y crea un borrador de respuesta sin enviarlo.</p>
       </div>
       <div class="hero-actions">
         <button class="btn btn-light" id="importBtn" onclick="importar()">
@@ -158,8 +158,8 @@
 
     <section class="metrics">
       <div class="metric">
-        <div class="metric-top"><span>Correos registrados</span><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span></div>
-        <div class="metric-value" id="totalEmails">—</div><div class="metric-foot">Filas de correo en la planilla</div>
+        <div class="metric-top"><span>Comprobantes registrados</span><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span></div>
+        <div class="metric-value" id="totalEmails">—</div><div class="metric-foot">Filas de comprobantes procesados</div>
       </div>
       <div class="metric">
         <div class="metric-top"><span>Conexión con Gmail</span><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span></div>
@@ -174,15 +174,15 @@
     <section class="content-grid">
       <div class="panel">
         <div class="panel-header"><div><h3>Últimos correos registrados</h3><p>Los mensajes más recientes de la planilla.</p></div><span class="status" id="recentBadge">Sin datos</span></div>
-        <div id="recentList"><div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div>Prepará el sistema para ver los correos acá.</div></div>
+        <div id="recentList"><div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div>Prepará el sistema para ver los comprobantes acá.</div></div>
       </div>
 
       <div class="panel">
         <div class="panel-header"><div><h3>Configuración</h3><p>Pasos iniciales del flujo.</p></div><span class="status" id="setupBadge">Pendiente</span></div>
         <div class="setup-body">
-          <div class="setup-step"><div class="step-number">1</div><div class="step-copy"><strong>Preparar la planilla</strong><p>Crea la hoja de cálculo y la etiqueta <code>Copello_Para_Excel</code> en Gmail.</p></div></div>
-          <div class="setup-step"><div class="step-number">2</div><div class="step-copy"><strong>Etiquetar un correo</strong><p>En Gmail, aplicá la etiqueta a los mensajes que querés registrar.</p></div></div>
-          <div class="setup-step"><div class="step-number">3</div><div class="step-copy"><strong>Importar y revisar</strong><p>Importá manualmente para probar. La revisión automática es opcional.</p></div></div>
+          <div class="setup-step"><div class="step-number">1</div><div class="step-copy"><strong>Preparar la planilla</strong><p>Crea las hojas de registro, la carpeta de adjuntos y las etiquetas <code>Pagos</code> y <code>Copello_Para_Excel</code>.</p></div></div>
+          <div class="setup-step"><div class="step-number">2</div><div class="step-copy"><strong>Etiquetar un correo</strong><p>En Gmail, aplicá <code>Pagos</code> a los correos con comprobantes. No etiquetes quejas como pagos.</p></div></div>
+          <div class="setup-step"><div class="step-number">3</div><div class="step-copy"><strong>Importar y revisar</strong><p>Importá para guardar adjuntos, detectar datos y crear un borrador de respuesta para revisar.</p></div></div>
           <div class="setup-actions">
             <button class="btn btn-primary" id="setupBtn" onclick="preparar()">Preparar sistema</button>
             <button class="btn btn-outline" id="autoBtn" onclick="cambiarAuto()" disabled>Activar automático</button>
@@ -193,7 +193,7 @@
 
     <div class="bottom-note">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
-      <div><strong>Importante:</strong> por ahora se guarda el correo completo en una fila. Todavía falta definir cómo extraer los datos específicos que tu hermano necesita y cuáles son las columnas de destino. La recepción de un correo no implica que un pago esté acreditado.</div>
+      <div><strong>Importante:</strong> Copello guarda los adjuntos y registra los datos que logra detectar; los campos extraídos deben revisarse antes de dar un pago por válido. Para leer texto de PDF e imágenes, activá el servicio avanzado Drive API v2 en Apps Script. El borrador queda sin enviar. La comparación con un Excel maestro todavía requiere integrar ese archivo.</div>
     </div>
     <footer><span>Copello · Herramienta interna de registro</span><span><a href="https://mtr-web.github.io/Copello-Automatizacion/" target="_blank" rel="noopener" style="color:inherit">Página del proyecto ↗</a> · Los mensajes no se envían ni se eliminan.</span></footer>
   </main>
@@ -295,7 +295,7 @@
       .withSuccessHandler(response => {
         renderEstado(response.state);
         setBusy('importBtn', false);
-        toast('Importación terminada: ' + response.result.imported + ' correo(s) nuevo(s).');
+        toast('Importación terminada: ' + response.result.imported + ' correo(s), ' + (response.result.attachmentCount || 0) + ' adjunto(s), ' + (response.result.drafts || 0) + ' borrador(es). ' + (response.result.ocrUnavailable ? 'OCR no disponible: activá Drive API v2.' : '');
       })
       .withFailureHandler(err => {
         setBusy('importBtn', false);
