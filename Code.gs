@@ -186,6 +186,48 @@ function importarCorreosCopello() {
 }
 
 /** OCR gratuito mediante el servicio avanzado Drive API v2. Activar en Servicios > Drive API. */
+/**
+ * Reintenta leer adjuntos de mensajes ya registrados sin crear borradores nuevos.
+ * Ejecutar desde Apps Script después de habilitar Drive API v2.
+ */
+function reprocesarOCRPendientesCopello() {
+  const props = PropertiesService.getUserProperties();
+  const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  if (!id) throw new Error('Primero ejecutá Preparar sistema.');
+  const ss = SpreadsheetApp.openById(id);
+  const sh = ss.getSheetByName(CONFIG.nombreHoja);
+  const folder = DriveApp.getFolderById(props.getProperty('COPPELLO_FOLDER_ID'));
+  if (!sh || sh.getLastRow() < 2) return {processed:0, message:'No hay registros para revisar.'};
+  const values = sh.getRange(2,1,sh.getLastRow()-1,HEADERS.length).getValues();
+  let processed = 0, read = 0, failed = 0;
+  values.forEach((r,i) => {
+    const status = String(r[10] || '');
+    const msgId = String(r[12] || '');
+    if (!msgId || (r[9] && String(r[9]).trim()) || !/OCR|adjunto|Drive|Pendiente|sin texto|Error/i.test(status)) return;
+    try {
+      const msg = GmailApp.getMessageById(msgId);
+      if (!msg) { failed++; return; }
+      const attachments = msg.getAttachments({includeInlineImages:false,includeAttachments:true});
+      if (!attachments.length) { sh.getRange(i+2,11).setValue('Sin adjunto'); failed++; return; }
+      let found = false;
+      for (const att of attachments) {
+        try {
+          const text = extraerTextoAdjunto_(att.copyBlob(), att.getContentType(), att.getName());
+          if (!text) continue;
+          const parsed = extraerCampos_(text);
+          sh.getRange(i+2,4,1,7).setValues([[parsed.importe,parsed.fecha,parsed.operacion,parsed.pagador,att.getName(),r[8] || '',text.slice(0,45000)]]);
+          sh.getRange(i+2,11).setValue('Texto extraído; verificar datos');
+          try { const file=folder.createFile(att.copyBlob()).setName((msgId+'_'+att.getName()).replace(/[\\/:*?"<>|]/g,'_').slice(0,180)); sh.getRange(i+2,9).setValue(file.getUrl()); } catch(e) {}
+          read++; found=true; processed++; break;
+        } catch (e) { sh.getRange(i+2,11).setValue('OCR pendiente: revisar permisos/servicio'); }
+      }
+      if (!found) failed++;
+    } catch (e) { sh.getRange(i+2,11).setValue('No se pudo reabrir el correo; revisar acceso'); failed++; }
+  });
+  actualizarPlanillaImpresionCopello_();
+  return {processed,read,failed,message:'Reintento terminado. No se crearon borradores nuevos.'};
+}
+
 function extraerTextoAdjunto_(source, mimeType, originalName) {
   if (!/^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif|bmp|tiff?)$/i.test(mimeType || '')) return '';
   if (typeof Drive === 'undefined' || !Drive.Files || !Drive.Files.insert) throw new Error('Activá Drive API v2 en Servicios de Apps Script.');
