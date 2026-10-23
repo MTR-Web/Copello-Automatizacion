@@ -160,6 +160,7 @@
           <div class="setup-actions">
             <button class="btn btn-primary" id="setupBtn" onclick="preparar()">Preparar sistema</button>
             <button class="btn btn-outline" id="autoBtn" onclick="cambiarAuto()" disabled>Activar automático</button>
+            <button class="btn btn-outline" id="clearBtn" onclick="limpiarHistorial()">Reiniciar historial</button>
           </div>
         </div>
       </div>
@@ -292,6 +293,17 @@
 
   function descargarExcel() {
     if (estado && estado.excelUrl) window.open(estado.excelUrl, '_blank', 'noopener');
+  }
+
+
+  function limpiarHistorial() {
+    const ok = confirm('¿Reiniciar el historial de Copello? Se borrarán los registros de Comprobantes y Correos y se reconstruirá la planilla al volver a importar. No se borran los mensajes del buzón ni los archivos guardados en Drive.');
+    if (!ok) return;
+    setBusy('clearBtn', true, 'Reiniciando…');
+    google.script.run
+      .withSuccessHandler(s => { renderEstado(s); setBusy('clearBtn', false); toast('Historial reiniciado. Ahora importá los correos que quieras registrar.'); })
+      .withFailureHandler(err => { setBusy('clearBtn', false); toast(err && err.message ? err.message : 'No se pudo reiniciar el historial.', true); })
+      .limpiarHistorialCopello();
   }
 
   function cambiarAuto() {
