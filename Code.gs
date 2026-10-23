@@ -32,7 +32,7 @@ function doGet() {
 }
 
 function prepararCopello() {
-  const props = PropertiesService.getScriptProperties();
+  const props = PropertiesService.getUserProperties();
   let id = props.getProperty('COPPELLO_SPREADSHEET_ID');
   let ss = null;
   if (id) { try { ss = SpreadsheetApp.openById(id); } catch (e) {} }
@@ -71,7 +71,7 @@ function prepararCopello() {
 }
 
 function importarCorreosCopello() {
-  const props = PropertiesService.getScriptProperties();
+  const props = PropertiesService.getUserProperties();
   const ssId = props.getProperty('COPPELLO_SPREADSHEET_ID');
   if (!ssId) throw new Error('Primero tocá "Preparar sistema" en el panel.');
   const ss = SpreadsheetApp.openById(ssId);
@@ -182,7 +182,7 @@ function extraerCampos_(text) {
 }
 
 function obtenerEstadoCopello() {
-  const props = PropertiesService.getScriptProperties();
+  const props = PropertiesService.getUserProperties();
   const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
   const labels = [CONFIG.etiquetaPagos,CONFIG.etiquetaLegacy];
   const triggers = ScriptApp.getProjectTriggers();
