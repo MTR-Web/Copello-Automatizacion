@@ -39,3 +39,25 @@ La hoja creada es Google Sheets. Para obtener un archivo Excel, abrí la hoja y 
 - [Backend Apps Script](Code.gs)
 - [Panel web para Apps Script](Index.html)
 - [Página informativa](index.html)
+
+
+## Página pública y conexión al panel
+
+La página informativa está en `index.html`. Se agregó un workflow en `.github/workflows/pages.yml` para publicar el sitio mediante GitHub Pages. Si Pages todavía no está habilitado para el repositorio, entrá a **Settings → Pages** y seleccioná **GitHub Actions** como origen de publicación. Después revisá **Actions** para ver el resultado del despliegue.
+
+URL esperada del sitio: https://mtr-web.github.io/Copello-Automatizacion/
+
+La página pública tiene un campo para guardar la URL de la aplicación web de Apps Script y abrir el panel. Esa URL solo se obtiene después de desplegar el proyecto desde la cuenta de Google; no se puede inventar ni crear con la integración de GitHub.
+
+### Desplegar el panel de Apps Script
+
+1. Abrí https://script.google.com/ y creá un proyecto.
+2. Copiá el archivo `Code.gs` de este repositorio al editor de Apps Script.
+3. Creá un archivo HTML llamado exactamente `Index` y copiá el contenido de `Index.html`.
+4. Guardá y ejecutá `prepararCopello` una vez desde el editor. Aceptá los permisos.
+5. Seleccioná **Implementar → Nueva implementación → Aplicación web**.
+6. Elegí **Ejecutar como: usuario que accede a la aplicación web** y restringí el acceso a la cuenta o las cuentas autorizadas. No habilites acceso público a una app que puede leer Gmail.
+7. Implementá y copiá la URL terminada en `/exec`.
+8. Abrí la página de GitHub Pages, pegá esa URL en **Acceso operativo** y guardala. Desde ahí se abrirá el panel.
+
+La página de GitHub Pages no puede acceder directamente a Gmail. El panel operativo debe ejecutarse desde la URL de Apps Script, que solicita los permisos de Google. No compartas la URL de una implementación con permisos amplios.
