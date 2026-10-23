@@ -200,9 +200,25 @@ function actualizarPlanillaImpresionCopello_() {
   out.getRange('A3:G3').merge().setValue('PLANILLA DESCRIPTIVA DE LA COBRANZA');
   const headers = ['AF','N.º DEPTO.','APELLIDO Y NOMBRE','IMPORTE','FECHA / PERÍODO','FIRMA / OBSERVACIONES','CONTROL'];
   out.getRange(4,1,1,7).setValues([headers]);
-  const rows = source && source.getLastRow() > 1
-    ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues().map(r => ['', '', r[6] || '', r[3] || '', r[4] || '', '', ''])
+  const values = source && source.getLastRow() > 1
+    ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues()
     : [];
+  const rows = values.map(r => {
+    const sender = String(r[1] || '');
+    const senderName = sender.replace(/<[^>]*>/g,'').replace(/["']/g,'').trim();
+    const payer = String(r[6] || '').trim();
+    const subject = String(r[2] || '').trim();
+    const operation = String(r[5] || '').trim();
+    const attachment = String(r[7] || '').trim();
+    const status = String(r[10] || 'Pendiente de revisión').trim();
+    const date = r[4] || '';
+    const notes = [
+      subject ? 'Asunto: ' + subject : '',
+      operation ? 'Operación: ' + operation : '',
+      attachment ? 'Comprobante: ' + attachment : ''
+    ].filter(Boolean).join('\n');
+    return ['', '', payer || senderName, r[3] || '', date, notes, (sender ? 'Remitente: ' + sender : '') + (status ? '\nEstado: ' + status : '')];
+  });
   if (rows.length) out.getRange(5,1,rows.length,7).setValues(rows);
   const totalRows = Math.max(24, rows.length + 5);
   if (totalRows > out.getMaxRows()) out.insertRowsAfter(out.getMaxRows(), totalRows - out.getMaxRows());
@@ -213,9 +229,11 @@ function actualizarPlanillaImpresionCopello_() {
   out.setRowHeight(1,26); out.setRowHeight(2,23); out.setRowHeight(3,28);
   out.getRange(4,1,1,7).setFontWeight('bold').setFontSize(9).setBackground('#e7e7e7').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
   out.setRowHeight(4,34);
-  if (rows.length) out.getRange(5,1,rows.length,7).setFontSize(9).setVerticalAlignment('middle').setWrap(true);
-  out.setRowHeights(5, Math.max(1,totalRows-4), 25);
-  [55,78,185,95,110,175,80].forEach((w,i)=>out.setColumnWidth(i+1,w));
+  if (rows.length) {
+    out.getRange(5,1,rows.length,7).setFontSize(9).setVerticalAlignment('middle').setWrap(true);
+    out.setRowHeights(5, rows.length, 42);
+  }
+  [55,78,185,95,110,175,175].forEach((w,i)=>out.setColumnWidth(i+1,w));
   out.getRange(4,1,totalRows-3,7).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
   out.getRange('A1:G3').setBorder(false,false,false,false,false,false);
   out.getRange('A4:G4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
@@ -229,9 +247,7 @@ function actualizarPlanillaImpresionCopello_() {
     out.getRange(5,4,rows.length,1).setNumberFormat('$ #,##0.00');
     out.getRange(5,5,rows.length,1).setNumberFormat('dd/mm/yyyy');
   }
-  const sheet = out.getSheetId();
-  ss.setActiveSheet(out);
-  return {rows:rows.length, sheet:name, sheetId:sheet};
+  return {rows:rows.length, sheet:name, sheetId:out.getSheetId()};
 }
 
 function obtenerEstadoCopello() {
@@ -244,7 +260,7 @@ function obtenerEstadoCopello() {
   if (id) {
     try {
       const ss=SpreadsheetApp.openById(id), sh=ss.getSheetByName(CONFIG.nombreHoja);
-      state.ready=Boolean(sh); state.spreadsheetUrl=ss.getUrl(); state.excelUrl='https://docs.google.com/spreadsheets/d/'+id+'/export?format=xlsx';
+      state.ready=Boolean(sh); state.spreadsheetUrl=ss.getUrl(); const printSh=ss.getSheetByName('Planilla para imprimir'); state.printUrl=printSh ? ss.getUrl()+'#gid='+printSh.getSheetId() : ss.getUrl(); state.excelUrl='https://docs.google.com/spreadsheets/d/'+id+'/export?format=xlsx';
       if (sh && sh.getLastRow()>1) {
         state.total=sh.getLastRow()-1;
         const from=Math.max(2,sh.getLastRow()-4);
