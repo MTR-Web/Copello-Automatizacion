@@ -4,35 +4,31 @@ Automatización inicial para registrar correos de Gmail en una planilla de Googl
 
 ## Qué incluye
 
-- `Code.gs`: backend de Gmail/Sheets, detección de duplicados, estado del sistema y disparador opcional cada 15 minutos.
-- `Index.html`: panel web adaptable a computadora y celular, con estado de configuración, total de correos, lista de mensajes recientes y botones para preparar, importar y activar/desactivar la revisión automática.
-- `index.html`: página informativa del repositorio.
+- `Code.gs`: procesa correos etiquetados `Pagos` (también admite la etiqueta anterior `Copello_Para_Excel`), guarda adjuntos en Drive, evita volver a procesar IDs ya registrados, intenta extraer datos, registra comprobantes y crea borradores de respuesta sin enviarlos.
+- `Index.html`: panel para preparar, importar, revisar registros, abrir la planilla y exportarla a Excel.
+- `index.html`: página informativa del proyecto.
 
-## Instalación y puesta en marcha
+## Instalación
 
-1. Abrí [Google Apps Script](https://script.google.com/) e iniciá un proyecto.
-2. En el archivo `Code.gs` del proyecto, pegá el contenido de este repositorio.
-3. Creá un archivo HTML llamado exactamente `Index` y pegá el contenido de `Index.html`.
-4. Guardá los archivos. Ejecutá `prepararCopello` una vez desde el editor y aceptá los permisos solicitados.
-5. En Gmail, aplicá la etiqueta `Copello_Para_Excel` a un correo de prueba.
-6. En Apps Script, elegí **Implementar → Nueva implementación → Aplicación web**. Para que procese el Gmail de quien la usa, seleccioná **Ejecutar como: usuario que accede a la aplicación web** y restringí **Quién tiene acceso** a tu cuenta o a las cuentas autorizadas. Cada usuario deberá conceder sus propios permisos. No la publiques con acceso abierto si puede leer correos personales.
-7. Abrí la URL de la aplicación web, usá **Importar correos** y verificá la planilla creada.
-8. Solo después de comprobar el resultado, activá **Activar automático** en el panel.
+1. En Apps Script, reemplazá el contenido de `Code.gs` por el de este repositorio.
+2. Creá o reemplazá el archivo HTML llamado exactamente `Index` con el contenido de `Index.html`.
+3. En el editor de Apps Script, abrí **Servicios +**, agregá **Drive API** (v2), necesaria para intentar OCR de PDF e imágenes.
+4. Guardá. Ejecutá `prepararCopello` desde el editor y autorizá Gmail, Drive y Sheets.
+5. En Gmail, etiquetá un correo de prueba con `Pagos`. No uses esa etiqueta para quejas.
+6. Implementá como aplicación web, ejecutá como tu cuenta y limitá el acceso a las cuentas autorizadas.
+7. Abrí la URL `/exec`, tocá **Preparar sistema** y luego **Importar correos**. Revisá tanto la planilla como la carpeta `Copello_Comprobantes`.
+8. Activá la revisión automática solo después de comprobar una prueba manual.
 
-## Qué registra
+## Qué registra y qué no
 
-Cada mensaje importado genera una fila con fecha, remitente, asunto, cuerpo, enlace al correo original, ID del mensaje y fecha de importación. El ID se usa para evitar duplicados.
-
-La hoja creada es Google Sheets. Para obtener un archivo Excel, abrí la hoja y elegí **Archivo → Descargar → Microsoft Excel (.xlsx)**.
-
-## Límites actuales
-
-- La importación busca mensajes que tengan la etiqueta indicada. El sistema no lee todos los correos de Gmail indiscriminadamente.
-- La versión actual guarda el correo completo; todavía no extrae automáticamente campos de negocio específicos. Para eso hacen falta ejemplos del correo y los encabezados de la planilla de destino.
-- No envía respuestas, no elimina mensajes ni confirma pagos.
-- La revisión automática es opcional. Se ejecuta cada 15 minutos cuando se activa desde el panel.
-- La importación actual revisa hasta 100 conversaciones etiquetadas por ejecución. Si se necesita procesar volúmenes mayores, hay que implementar paginación y probarla con la cuenta real.
-- No está conectada a un archivo Excel local de una computadora. Usa Google Sheets, que se puede exportar a Excel.
+- La hoja `Comprobantes` guarda un registro por adjunto, el enlace al archivo de Drive, texto extraído, campos detectados y estado de revisión.
+- La hoja `Correos` conserva el registro del mensaje.
+- Copello intenta detectar importe, fecha, número de operación y pagador mediante patrones de texto. La extracción puede fallar o interpretar mal formatos; los datos deben verificarse.
+- Los adjuntos se guardan en una carpeta de Drive llamada `Copello_Comprobantes`.
+- Si el correo tiene adjuntos, el sistema intenta crear un borrador de respuesta. **No envía mensajes.** El texto del borrador se configura en `CONFIG.textoBorrador`.
+- El OCR necesita el servicio avanzado Drive API v2. Si no está habilitado, los adjuntos se guardan y quedan marcados para revisión manual.
+- Todavía no se compara contra el Excel maestro de consorcios/unidades: hace falta integrar ese archivo y conocer sus columnas.
+- La automatización cada 15 minutos es opcional y debe probarse con la cuenta real antes de depender de ella.
 
 ## Archivos
 
