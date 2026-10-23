@@ -137,9 +137,14 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 17v3h14v-3"/></svg>
           Importar correos
         </button>
-        <button class="btn btn-ghost" id="sheetBtn" onclick="abrirPlanilla()" disabled>
-          Abrir planilla ↗
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="sheetBtn" onclick="abrirPlanilla()" disabled>
+            Abrir planilla ↗
+          </button>
+          <button class="btn btn-ghost" id="excelBtn" onclick="descargarExcel()" disabled>
+            Descargar Excel ↓
+          </button>
+        </div>
       </div>
     </section>
 
@@ -240,6 +245,7 @@
     document.getElementById('autoDetail').textContent = s.triggerEnabled ? 'Revisión cada 15 minutos' : 'Se puede activar cada 15 minutos';
     document.getElementById('heroStatus').textContent = s.ready ? 'Sistema configurado' : 'Panel listo para configurar';
     document.getElementById('sheetBtn').disabled = !s.spreadsheetUrl;
+    document.getElementById('excelBtn').disabled = !s.excelUrl;
     document.getElementById('autoBtn').disabled = !s.ready;
     document.getElementById('autoBtn').textContent = s.triggerEnabled ? 'Desactivar automático' : 'Activar automático';
     document.getElementById('setupBadge').textContent = s.ready ? 'Configurado' : 'Pendiente';
@@ -300,6 +306,10 @@
 
   function abrirPlanilla() {
     if (estado && estado.spreadsheetUrl) window.open(estado.spreadsheetUrl, '_blank', 'noopener');
+  }
+
+  function descargarExcel() {
+    if (estado && estado.excelUrl) window.open(estado.excelUrl, '_blank', 'noopener');
   }
 
   function cambiarAuto() {
