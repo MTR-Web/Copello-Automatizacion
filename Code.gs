@@ -132,7 +132,9 @@ function importarCorreosCopello() {
         try {
           thread.createDraftReply(CONFIG.textoBorrador);
           drafts++;
-        } catch (e) {}
+        } catch (e) {
+          Logger.log('Error al crear borrador para ' + msgId + ': ' + e.message);
+        }
       }
       existing.add(msgId);
       imported++;
