@@ -95,7 +95,7 @@
       <div>
         <div class="eyebrow">Panel de control</div>
         <h1>Copello · Comprobantes</h1>
-        <p class="subtitle">Comprobantes de pago desde Gmail a Excel, con revisión de los datos detectados.</p>
+        <p class="subtitle">Registro de comprobantes y preparación de una planilla de cobranza para imprimir.</p>
       </div>
       <div class="user-chip"><div class="avatar">C</div><div><strong style="font-size:12px">Copello</strong><small>Automatización interna</small></div></div>
     </header>
@@ -104,7 +104,7 @@
       <div class="hero-content">
         <div class="hero-tag"><span class="dot"></span><span id="heroStatus">Panel listo para configurar</span></div>
         <h2>Del comprobante al Excel.<br>Sin carga manual.</h2>
-        <p>Etiquetá los correos de pagos en Gmail. Copello guarda los adjuntos, intenta extraer datos y crea un borrador de respuesta sin enviarlo.</p>
+        <p>Copello reúne los datos disponibles del remitente y del comprobante en una hoja lista para imprimir. Los borradores de respuesta nunca se envían solos.</p>
       </div>
       <div class="hero-actions">
         <button class="btn btn-light" id="importBtn" onclick="importar()">
@@ -123,7 +123,7 @@
     </section>
 
     <div class="section-head">
-      <div><h3>Estado del sistema</h3><p>Información actualizada desde tu cuenta de Google.</p></div>
+      <div><h3>Estado del sistema</h3><p>Estado de la planilla y los registros.</p></div>
       <button class="btn btn-outline" style="padding:9px 12px" onclick="cargarEstado()">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg>
         Actualizar
@@ -136,7 +136,7 @@
         <div class="metric-value" id="totalEmails">—</div><div class="metric-foot">Filas de comprobantes procesados</div>
       </div>
       <div class="metric">
-        <div class="metric-top"><span>Conexión con Gmail</span><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span></div>
+        <div class="metric-top"><span>Conexión de correo</span><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span></div>
         <div class="metric-value" style="font-size:21px" id="gmailStatus">Verificando</div><div class="metric-foot" id="labelDetail">Etiqueta de recepción</div>
       </div>
       <div class="metric">
@@ -155,7 +155,7 @@
         <div class="panel-header"><div><h3>Configuración</h3><p>Pasos iniciales del flujo.</p></div><span class="status" id="setupBadge">Pendiente</span></div>
         <div class="setup-body">
           <div class="setup-step"><div class="step-number">1</div><div class="step-copy"><strong>Preparar la planilla</strong><p>Crea las hojas de registro, la carpeta de adjuntos y las etiquetas <code>Pagos</code> y <code>Copello_Para_Excel</code>.</p></div></div>
-          <div class="setup-step"><div class="step-number">2</div><div class="step-copy"><strong>Etiquetar un correo</strong><p>En Gmail, aplicá <code>Pagos</code> a los correos con comprobantes. No etiquetes quejas como pagos.</p></div></div>
+          <div class="setup-step"><div class="step-number">2</div><div class="step-copy"><strong>Etiquetar un correo</strong><p>En el correo, aplicá <code>Pagos</code> a los correos con comprobantes. No etiquetes quejas como pagos.</p></div></div>
           <div class="setup-step"><div class="step-number">3</div><div class="step-copy"><strong>Importar y revisar</strong><p>Importá para guardar adjuntos, detectar datos y crear un borrador de respuesta para revisar.</p></div></div>
           <div class="setup-actions">
             <button class="btn btn-primary" id="setupBtn" onclick="preparar()">Preparar sistema</button>
@@ -244,7 +244,7 @@
   function renderRecent(items) {
     const container = document.getElementById('recentList');
     if (!items.length) {
-      container.innerHTML = '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div>Todavía no hay correos registrados.<br>Etiquetá un correo en Gmail y elegí “Importar correos”.</div>';
+      container.innerHTML = '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div>Todavía no hay correos registrados.<br>Importá los comprobantes para completar la planilla.</div>';
       return;
     }
     container.innerHTML = '<div class="recent-list">' + items.map(item => {
@@ -287,7 +287,7 @@
   }
 
   function abrirPlanilla() {
-    if (estado && estado.spreadsheetUrl) window.open(estado.spreadsheetUrl, '_blank', 'noopener');
+    if (estado && (estado.printUrl || estado.spreadsheetUrl)) window.open(estado.printUrl || estado.spreadsheetUrl, '_blank', 'noopener');
   }
 
   function descargarExcel() {
