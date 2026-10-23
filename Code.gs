@@ -82,6 +82,7 @@ function prepararCopello() {
     folder = it.hasNext() ? it.next() : DriveApp.createFolder(CONFIG.nombreCarpetaAdjuntos);
     props.setProperty('COPPELLO_FOLDER_ID', folder.getId());
   }
+  actualizarPlanillaImpresionCopello_();
   const printSheet = ss.getSheetByName('Planilla para imprimir');
   if (printSheet) { printSheet.showSheet(); ss.setActiveSheet(printSheet); }
   [sh, mailSh].forEach(tab => { if (tab && tab.getName() !== 'Planilla para imprimir') tab.hideSheet(); });
