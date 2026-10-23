@@ -128,7 +128,7 @@ function importarCorreosCopello() {
         mailRows.push([msg.getDate(),msg.getFrom(),msg.getSubject(),msg.getPlainBody(),mailLink,msgId,now,thread.getLabels().map(l=>l.getName()).join(', ')]);
         mailExisting.add(msgId);
       }
-      if (CONFIG.crearBorradorRespuesta && attachments.length > 0) {
+      if (CONFIG.crearBorradorRespuesta) {
         try {
           thread.createDraftReply(CONFIG.textoBorrador);
           drafts++;
