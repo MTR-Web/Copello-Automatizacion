@@ -295,7 +295,7 @@
       .withSuccessHandler(response => {
         renderEstado(response.state);
         setBusy('importBtn', false);
-        toast('Importación terminada: ' + response.result.imported + ' correo(s), ' + (response.result.attachmentCount || 0) + ' adjunto(s), ' + (response.result.drafts || 0) + ' borrador(es). ' + (response.result.ocrUnavailable ? 'OCR no disponible: activá Drive API v2.' : '');
+        toast('Importación terminada: ' + response.result.imported + ' correo(s), ' + (response.result.attachmentCount || 0) + ' adjunto(s), ' + (response.result.drafts || 0) + ' borrador(es). ' + (response.result.ocrUnavailable ? 'OCR no disponible: activá Drive API v2.' : ''));
       })
       .withFailureHandler(err => {
         setBusy('importBtn', false);
