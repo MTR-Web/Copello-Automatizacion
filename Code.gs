@@ -226,7 +226,7 @@ function actualizarPlanillaImpresionCopello_() {
   out.getRange('A1:J1').merge().setValue('COPELLO ADMINISTRACIÓN: LUNES A VIERNES DE 9 A 18 HS. · CABA');
   out.getRange('A2:J2').merge().setValue('EMAIL: PAGOS Y EXPENSAS');
   out.getRange('A3:J3').merge().setValue('PLANILLA DESCRIPTIVA DE LA COBRANZA  *  LIQUIDACIÓN EXPENSAS  *');
-  const headers = ['AF','A4','Apellido y nombre del propietario','Saldo deudor','Fecha de pago','Pago por correo','N.º de cheque','Nombre del banco','Importe del cheque','Observaciones / comprobante'];
+  const headers = ['AF','A4','Apellido y nombre del propietario','Saldo deudor','Fecha de pago','Pago por correo','N.º de cheque','Nombre del banco','Importe del cheque','Importe en efectivo','Total / observaciones'];
   out.getRange(4,1,1,headers.length).setValues([headers]);
   const values = source && source.getLastRow() > 1 ? source.getRange(2,1,source.getLastRow()-1,HEADERS.length).getValues() : [];
   const rows = values.map(r => {
@@ -244,11 +244,12 @@ function actualizarPlanillaImpresionCopello_() {
       subject ? 'Asunto: ' + subject : '',
       attachment ? 'Adjunto: ' + attachment : '',
       operation ? 'Operación: ' + operation : '',
-      extracted ? extracted.slice(0,900) : 'OCR sin texto: revisar imagen del comprobante'
+      extracted ? extracted.slice(0,700) : '',
+      status && status !== 'Texto extraído; verificar datos' ? 'Revisar: ' + status : ''
     ].filter(Boolean).join('\n');
-    return ['', '', payer || '', r[3] || parsed.importe || '', date, sender ? sender : '', operation, '', '', details + (status ? '\nEstado: ' + status : '')];
+    return ['', '', payer || '', r[3] || parsed.importe || '', date, sender ? sender : '', operation, '', '', '', details];
   });
-  if (rows.length) out.getRange(5,1,rows.length,10).setValues(rows);
+  if (rows.length) out.getRange(5,1,rows.length,11).setValues(rows);
   const totalRows = Math.max(24, rows.length + 5);
   if (totalRows > out.getMaxRows()) out.insertRowsAfter(out.getMaxRows(), totalRows-out.getMaxRows());
   out.getRange(1,1,3,10).setFontFamily('Arial').setVerticalAlignment('middle');
@@ -262,16 +263,16 @@ function actualizarPlanillaImpresionCopello_() {
     out.getRange(5,1,rows.length,10).setFontSize(8).setVerticalAlignment('middle').setWrap(true);
     out.setRowHeights(5,rows.length,52);
   }
-  [42,48,150,80,75,145,75,90,85,210].forEach((w,i)=>out.setColumnWidth(i+1,w));
-  out.getRange(4,1,totalRows-3,10).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
-  out.getRange('A1:J3').setBorder(false,false,false,false,false,false);
-  out.getRange('A4:J4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  out.getRange(totalRows,1,1,10).merge().setValue('OBSERVACIONES: __________________________________________________________________________________________________________');
+  [42,48,150,80,75,145,75,90,85,85,210].forEach((w,i)=>out.setColumnWidth(i+1,w));
+  out.getRange(4,1,totalRows-3,11).setBorder(true,true,true,true,true,true,'#444444',SpreadsheetApp.BorderStyle.SOLID);
+  out.getRange('A1:K3').setBorder(false,false,false,false,false,false);
+  out.getRange('A4:K4').setBorder(true,true,true,true,true,true,'#222222',SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  out.getRange(totalRows,1,1,11).merge().setValue('OBSERVACIONES: __________________________________________________________________________________________________________');
   out.setRowHeight(totalRows,25);
   out.getRange(totalRows,1).setFontSize(8).setVerticalAlignment('middle');
   out.setFrozenRows(4);
   out.setTabColor('#2e6b53');
-  if (out.getMaxColumns()>10) out.deleteColumns(11,out.getMaxColumns()-10);
+  if (out.getMaxColumns()>11) out.deleteColumns(12,out.getMaxColumns()-11);
   if (rows.length) {
     out.getRange(5,4,rows.length,1).setNumberFormat('$ #,##0.00');
     out.getRange(5,5,rows.length,1).setNumberFormat('dd/mm/yyyy');
