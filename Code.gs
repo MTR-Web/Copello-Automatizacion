@@ -128,14 +128,17 @@ function importarCorreosCopello() {
           let savedFile, extracted = '', ocrStatus = 'Pendiente de revisión';
           try {
             const safeName = (msgId + '_' + att.getName()).replace(/[\\/:*?"<>|]/g,'_').slice(0,180);
-            savedFile = folder.createFile(att.copyBlob()).setName(safeName);
             try {
-              extracted = extraerTextoAdjunto_(savedFile, att.getContentType());
-              if (extracted) ocrStatus = 'Texto extraído; verificar datos';
-              else ocrStatus = 'No se pudo extraer texto; revisar manualmente';
+              extracted = extraerTextoAdjunto_(att.copyBlob(), att.getContentType(), att.getName());
+              ocrStatus = extracted ? 'Texto extraído; verificar datos' : 'OCR sin texto; revisar imagen/PDF';
             } catch (ocrErr) {
               ocrUnavailable = true;
-              ocrStatus = 'OCR no disponible; revisar adjunto';
+              ocrStatus = 'OCR falló: ' + String(ocrErr.message || ocrErr).slice(0,180);
+            }
+            try {
+              savedFile = folder.createFile(att.copyBlob()).setName(safeName);
+            } catch (saveErr) {
+              ocrStatus += ' | Error al guardar adjunto: ' + String(saveErr.message || saveErr).slice(0,180);
             }
           } catch (saveErr) {
             ocrStatus = 'Error al guardar adjunto: ' + saveErr.message;
@@ -173,24 +176,24 @@ function importarCorreosCopello() {
   }
   if (mailRows.length) mailSh.getRange(mailSh.getLastRow()+1,1,mailRows.length,8).setValues(mailRows);
   actualizarPlanillaImpresionCopello_();
+  const printable = ss.getSheetByName('Planilla para imprimir');
+  [sh, mailSh].forEach(tab => { if (tab) tab.hideSheet(); });
+  if (printable) { printable.showSheet(); ss.setActiveSheet(printable); }
   props.setProperty('COPPELLO_LAST_RUN',new Date().toISOString());
   props.setProperty('COPPELLO_LAST_IMPORT',JSON.stringify({imported,attachmentCount,drafts,ocrUnavailable}));
   return {imported,attachmentCount,drafts,ocrUnavailable,total:Math.max(0,sh.getLastRow()-1),spreadsheetUrl:ss.getUrl()};
 }
 
 /** OCR gratuito mediante el servicio avanzado Drive API v2. Activar en Servicios > Drive API. */
-function extraerTextoAdjunto_(file, mimeType) {
-  const supported = /^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif|bmp|tiff?)$/i.test(mimeType || '');
-  if (!supported) return '';
-  if (typeof Drive === 'undefined' || !Drive.Files || !Drive.Files.insert) {
-    throw new Error('Activá el servicio avanzado Drive API v2.');
-  }
+function extraerTextoAdjunto_(source, mimeType, originalName) {
+  if (!/^application\/pdf$|^image\/(png|jpeg|jpg|webp|gif|bmp|tiff?)$/i.test(mimeType || '')) return '';
+  if (typeof Drive === 'undefined' || !Drive.Files || !Drive.Files.insert) throw new Error('Activá Drive API v2 en Servicios de Apps Script.');
   let tempId = null;
   try {
-    const blob = file.getBlob();
-    const resource = {title:'OCR_TEMP_' + file.getName(),mimeType:'application/vnd.google-apps.document'};
-    const docFile = Drive.Files.insert(resource, blob, {convert:true,ocr:true,ocrLanguage:'es'});
-    tempId = docFile.id;
+    const blob = source && typeof source.getBlob === 'function' ? source.getBlob() : source;
+    blob.setName(originalName || 'comprobante');
+    const doc = Drive.Files.insert({title:'OCR_TEMP_' + (originalName || 'comprobante'),mimeType:'application/vnd.google-apps.document'}, blob, {convert:true,ocr:true,ocrLanguage:'es'});
+    tempId = doc.id;
     return DocumentApp.openById(tempId).getBody().getText() || '';
   } finally {
     if (tempId) { try { Drive.Files.remove(tempId); } catch (e) {} }
