@@ -15,7 +15,7 @@ Automatización inicial para registrar correos de Gmail en una planilla de Googl
 3. Creá un archivo HTML llamado exactamente `Index` y pegá el contenido de `Index.html`.
 4. Guardá los archivos. Ejecutá `prepararCopello` una vez desde el editor y aceptá los permisos solicitados.
 5. En Gmail, aplicá la etiqueta `Copello_Para_Excel` a un correo de prueba.
-6. En Apps Script, elegí **Implementar → Nueva implementación → Aplicación web**. Para uso personal, configurá la ejecución y el acceso de forma que solo las cuentas autorizadas puedan usar el panel. No publiques un panel que acceda a tu Gmail como aplicación pública.
+6. En Apps Script, elegí **Implementar → Nueva implementación → Aplicación web**. Para que procese el Gmail de quien la usa, seleccioná **Ejecutar como: usuario que accede a la aplicación web** y restringí **Quién tiene acceso** a tu cuenta o a las cuentas autorizadas. Cada usuario deberá conceder sus propios permisos. No la publiques con acceso abierto si puede leer correos personales.
 7. Abrí la URL de la aplicación web, usá **Importar correos** y verificá la planilla creada.
 8. Solo después de comprobar el resultado, activá **Activar automático** en el panel.
 
