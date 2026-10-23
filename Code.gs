@@ -31,6 +31,21 @@ function doGet() {
     .addMetaTag('viewport','width=device-width, initial-scale=1');
 }
 
+function autorizarDriveCopello() {
+  const props = PropertiesService.getUserProperties();
+  let folderId = props.getProperty('COPPELLO_FOLDER_ID');
+  let folder;
+  if (folderId) {
+    folder = DriveApp.getFolderById(folderId);
+    folder.getName();
+  } else {
+    folder = DriveApp.getFoldersByName(CONFIG.nombreCarpetaAdjuntos);
+    folder = folder.hasNext() ? folder.next() : DriveApp.createFolder(CONFIG.nombreCarpetaAdjuntos);
+    props.setProperty('COPPELLO_FOLDER_ID', folder.getId());
+  }
+  return {ok:true,folderUrl:folder.getUrl(),message:'Acceso a Drive autorizado.'};
+}
+
 function prepararCopello() {
   const props = PropertiesService.getUserProperties();
   let id = props.getProperty('COPPELLO_SPREADSHEET_ID');
@@ -67,6 +82,10 @@ function prepararCopello() {
     folder = it.hasNext() ? it.next() : DriveApp.createFolder(CONFIG.nombreCarpetaAdjuntos);
     props.setProperty('COPPELLO_FOLDER_ID', folder.getId());
   }
+  const printSheet = ss.getSheetByName('Planilla para imprimir');
+  if (printSheet) { printSheet.showSheet(); ss.setActiveSheet(printSheet); }
+  [sh, mailSh].forEach(tab => { if (tab && tab.getName() !== 'Planilla para imprimir') tab.hideSheet(); });
+  ss.getSheets().filter(tab => tab.getName() === 'Sheet1' && ss.getSheets().length > 1).forEach(tab => ss.deleteSheet(tab));
   return {url:ss.getUrl(),label:CONFIG.etiquetaPagos,folderUrl:folder.getUrl()};
 }
 
