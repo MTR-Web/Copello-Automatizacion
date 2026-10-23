@@ -212,12 +212,14 @@ function actualizarPlanillaImpresionCopello_() {
     const attachment = String(r[7] || '').trim();
     const status = String(r[10] || 'Pendiente de revisión').trim();
     const date = r[4] || '';
+    const extracted = String(r[9] || '').trim();
     const notes = [
       subject ? 'Asunto: ' + subject : '',
       operation ? 'Operación: ' + operation : '',
-      attachment ? 'Comprobante: ' + attachment : ''
+      attachment ? 'Adjunto: ' + attachment : '',
+      extracted ? 'Datos leídos: ' + extracted.slice(0,1200) : 'Texto del comprobante: no disponible'
     ].filter(Boolean).join('\n');
-    return ['', '', payer || senderName, r[3] || '', date, notes, (sender ? 'Remitente: ' + sender : '') + (status ? '\nEstado: ' + status : '')];
+    return ['', '', payer || senderName, r[3] || '', date, notes, (sender ? 'Correo: ' + sender : '') + (status ? '\nEstado: ' + status : '')];
   });
   if (rows.length) out.getRange(5,1,rows.length,7).setValues(rows);
   const totalRows = Math.max(24, rows.length + 5);
