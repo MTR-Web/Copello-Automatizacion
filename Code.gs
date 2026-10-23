@@ -1,140 +1,88 @@
-/**
- * Copello - pasar correos etiquetados a una hoja de cálculo.
- * No envía correos ni modifica los mensajes.
- *
- * Configuración:
- * 1. Crear una etiqueta de Gmail llamada Copello_Para_Excel.
- * 2. En script.google.com, crear un proyecto y pegar este archivo.
- * 3. Ejecutar prepararCopello() y autorizar permisos.
- * 4. Ejecutar importarCorreosCopello() para probar.
- *
- * Esta versión guarda los campos generales del correo y el cuerpo completo.
- * La extracción de campos específicos se ajusta cuando se define el formato
- * real del correo y las columnas exactas de la planilla.
- */
+const CONFIG = { etiquetaGmail: 'Copello_Para_Excel', nombrePlanilla: 'Copello_Registro_Correos', nombreHoja: 'Correos', limiteConversaciones: 100 };
 
-const CONFIG = {
-  etiquetaGmail: 'Copello_Para_Excel',
-  nombrePlanilla: 'Copello_Registro_Correos',
-  nombreHoja: 'Correos'
-};
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index').setTitle('Copello | Centro de correos').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
 
 function prepararCopello() {
   const props = PropertiesService.getScriptProperties();
-  let spreadsheetId = props.getProperty('COPPELLO_SPREADSHEET_ID');
-  let spreadsheet;
-
-  if (spreadsheetId) {
-    try {
-      spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-    } catch (e) {
-      spreadsheet = null;
-    }
+  let id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  let ss = null;
+  if (id) { try { ss = SpreadsheetApp.openById(id); } catch (e) {} }
+  if (!ss) {
+    ss = SpreadsheetApp.create(CONFIG.nombrePlanilla);
+    props.setProperty('COPPELLO_SPREADSHEET_ID', ss.getId());
   }
-
-  if (!spreadsheet) {
-    spreadsheet = SpreadsheetApp.create(CONFIG.nombrePlanilla);
-    props.setProperty('COPPELLO_SPREADSHEET_ID', spreadsheet.getId());
+  let sh = ss.getSheetByName(CONFIG.nombreHoja);
+  if (!sh) { sh = ss.getSheets()[0]; sh.setName(CONFIG.nombreHoja); }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['Fecha del correo','Remitente','Asunto','Cuerpo del correo','Enlace al correo','ID del mensaje','Fecha de importación']);
+    sh.setFrozenRows(1);
+    sh.getRange(1,1,1,7).setFontWeight('bold').setBackground('#18352e').setFontColor('#ffffff');
+    [155,240,280,420,240,220,155].forEach((w,i) => sh.setColumnWidth(i+1,w));
   }
-
-  let sheet = spreadsheet.getSheetByName(CONFIG.nombreHoja);
-  if (!sheet) sheet = spreadsheet.getSheets()[0].setName(CONFIG.nombreHoja);
-
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow([
-      'Fecha del correo',
-      'Remitente',
-      'Asunto',
-      'Cuerpo del correo',
-      'Enlace al correo',
-      'ID del mensaje',
-      'Fecha de importación'
-    ]);
-    sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, 7).setFontWeight('bold');
-  }
-
-  if (!GmailApp.getUserLabelByName(CONFIG.etiquetaGmail)) {
-    GmailApp.createLabel(CONFIG.etiquetaGmail);
-  }
-
-  Logger.log('Planilla: ' + spreadsheet.getUrl());
-  return spreadsheet.getUrl();
+  if (!GmailApp.getUserLabelByName(CONFIG.etiquetaGmail)) GmailApp.createLabel(CONFIG.etiquetaGmail);
+  return {url:ss.getUrl(), label:CONFIG.etiquetaGmail};
 }
 
 function importarCorreosCopello() {
   const props = PropertiesService.getScriptProperties();
-  const spreadsheetId = props.getProperty('COPPELLO_SPREADSHEET_ID');
-  if (!spreadsheetId) {
-    throw new Error('Primero ejecutá prepararCopello().');
-  }
-
-  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-  const sheet = spreadsheet.getSheetByName(CONFIG.nombreHoja);
+  const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  if (!id) throw new Error('Primero prepará Copello desde el panel.');
+  const ss = SpreadsheetApp.openById(id);
+  const sh = ss.getSheetByName(CONFIG.nombreHoja);
   const label = GmailApp.getUserLabelByName(CONFIG.etiquetaGmail);
-  if (!label) throw new Error('No existe la etiqueta ' + CONFIG.etiquetaGmail);
-
-  const existingIds = new Set();
-  if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 6, sheet.getLastRow() - 1, 1)
-      .getDisplayValues()
-      .flat()
-      .filter(String)
-      .forEach(id => existingIds.add(id));
-  }
-
-  const threads = label.getThreads(0, 100);
+  if (!label) throw new Error('No existe la etiqueta Gmail ' + CONFIG.etiquetaGmail);
+  const ids = new Set();
+  if (sh.getLastRow() > 1) sh.getRange(2,6,sh.getLastRow()-1,1).getDisplayValues().flat().filter(String).forEach(v => ids.add(v));
+  const threads = label.getThreads(0,CONFIG.limiteConversaciones);
+  const now = new Date();
   const rows = [];
-  const importedAt = new Date();
-
-  threads.forEach(thread => {
-    thread.getMessages().forEach(message => {
-      const id = message.getId();
-      if (existingIds.has(id)) return;
-
-      rows.push([
-        message.getDate(),
-        message.getFrom(),
-        message.getSubject(),
-        message.getPlainBody(),
-        'https://mail.google.com/mail/u/0/#all/' + id,
-        id,
-        importedAt
-      ]);
-      existingIds.add(id);
-    });
-  });
-
+  threads.forEach(thread => thread.getMessages().forEach(msg => {
+    const msgId = msg.getId();
+    if (ids.has(msgId)) return;
+    rows.push([msg.getDate(),msg.getFrom(),msg.getSubject(),msg.getPlainBody(),'https://mail.google.com/mail/u/0/#all/'+msgId,msgId,now]);
+    ids.add(msgId);
+  }));
   if (rows.length) {
-    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length)
-      .setValues(rows);
+    const start = sh.getLastRow()+1;
+    sh.getRange(start,1,rows.length,7).setValues(rows);
+    sh.getRange(start,1,rows.length,1).setNumberFormat('dd/mm/yyyy hh:mm');
+    sh.getRange(start,7,rows.length,1).setNumberFormat('dd/mm/yyyy hh:mm');
   }
-
-  Logger.log('Correos nuevos importados: ' + rows.length);
-  Logger.log('Planilla: ' + spreadsheet.getUrl());
-  return rows.length;
+  props.setProperty('COPPELLO_LAST_RUN',new Date().toISOString());
+  return {imported:rows.length, total:Math.max(0,sh.getLastRow()-1), spreadsheetUrl:ss.getUrl()};
 }
 
-/**
- * Opcional: crea un disparador que revisa la etiqueta cada 15 minutos.
- * Ejecutarlo solo después de probar la importación manual.
- */
+function obtenerEstadoCopello() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('COPPELLO_SPREADSHEET_ID');
+  const triggers = ScriptApp.getProjectTriggers();
+  const state = {ready:false,labelExists:Boolean(GmailApp.getUserLabelByName(CONFIG.etiquetaGmail)),label:CONFIG.etiquetaGmail,spreadsheetUrl:'',total:0,recent:[],triggerEnabled:triggers.some(t=>t.getHandlerFunction()==='importarCorreosCopello'),lastRun:props.getProperty('COPPELLO_LAST_RUN')||''};
+  if (id) {
+    try {
+      const ss = SpreadsheetApp.openById(id);
+      const sh = ss.getSheetByName(CONFIG.nombreHoja);
+      state.ready = true; state.spreadsheetUrl = ss.getUrl();
+      if (sh && sh.getLastRow()>1) {
+        const last=sh.getLastRow(); state.total=last-1;
+        const from=Math.max(2,last-4);
+        state.recent=sh.getRange(from,1,last-from+1,7).getDisplayValues().reverse().map(r=>({date:r[0],sender:r[1],subject:r[2],link:r[4]}));
+      }
+    } catch(e) {}
+  }
+  return state;
+}
+
+function prepararDesdePanelCopello() { prepararCopello(); return obtenerEstadoCopello(); }
+function importarDesdePanelCopello() { const result=importarCorreosCopello(); return {result:result,state:obtenerEstadoCopello()}; }
 function instalarRevisionAutomaticaCopello() {
-  const exists = ScriptApp.getProjectTriggers()
-    .some(trigger => trigger.getHandlerFunction() === 'importarCorreosCopello');
-  if (!exists) {
-    ScriptApp.newTrigger('importarCorreosCopello')
-      .timeBased()
-      .everyMinutes(15)
-      .create();
+  if (!ScriptApp.getProjectTriggers().some(t=>t.getHandlerFunction()==='importarCorreosCopello')) {
+    ScriptApp.newTrigger('importarCorreosCopello').timeBased().everyMinutes(15).create();
   }
+  return obtenerEstadoCopello();
 }
-
-/** Quita únicamente el disparador de esta importación. */
 function quitarRevisionAutomaticaCopello() {
-  ScriptApp.getProjectTriggers().forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'importarCorreosCopello') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  });
+  ScriptApp.getProjectTriggers().forEach(t=>{if(t.getHandlerFunction()==='importarCorreosCopello') ScriptApp.deleteTrigger(t);});
+  return obtenerEstadoCopello();
 }
